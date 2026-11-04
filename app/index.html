@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Fifteen</title>
+  <meta name="description" content="One 15-minute task a day.">
+  <meta name="theme-color" content="#E8EBE3" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#11151D" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23E8EBE3'/%3E%3Cpath d='M0 15h32v9a8 8 0 0 1-8 8H8a8 8 0 0 1-8-8z' fill='%232E48C2'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- The page is drawn twice: once dry, once underwater. The underwater
+       copy is clipped to the tide line, so the tide passes through the type. -->
+  <div id="dry" class="layer dry"></div>
+  <div id="wet" class="layer wet" aria-hidden="true" inert><div class="wet-inner"></div></div>
+  <div id="live" class="sr-only" aria-live="polite"></div>
+  <noscript><p style="padding:2rem">Fifteen needs JavaScript to run.</p></noscript>
+  <script src="tasks.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

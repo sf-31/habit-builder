@@ -1,0 +1,67 @@
+# Publishes both versions of the site together:
+#   main branch -> https://<user>.github.io/habit-builder/
+#   test branch -> https://<user>.github.io/habit-builder/test/
+# A push to either branch rebuilds both. If there's no test branch yet,
+# /test/ serves a copy of main.
+name: Deploy
+
+on:
+  push:
+    branches: [main, test]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+
+      - name: Check out test
+        id: test
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: test
+          path: test
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site/test
+          cp -R main/app/. _site/
+          if [ -d test/app ]; then
+            cp -R test/app/. _site/test/
+          else
+            cp -R main/app/. _site/test/
+          fi
+          # Keep the test build out of search results.
+          sed -i 's|<meta charset="utf-8">|<meta charset="utf-8">\n  <meta name="robots" content="noindex, nofollow">|' _site/test/index.html
+          printf 'User-agent: *\nDisallow: /habit-builder/test/\nDisallow: /test/\n' > _site/robots.txt
+          touch _site/.nojekyll
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
