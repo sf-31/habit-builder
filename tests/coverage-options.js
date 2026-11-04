@@ -3,10 +3,10 @@ module.exports = {
   name: 'Fifteen coverage',
   outputDir: './coverage',
   reports: ['console-details', 'html', 'lcovonly'],
-  // app.js, plus the real tasks.js (not the stand-in lists some tests serve).
+  // The app's modules in js/, plus the real tasks.js (not the stand-in lists some tests serve).
   entryFilter: (entry) => {
     const file = new URL(entry.url).pathname;
-    if (file.endsWith('/app.js')) return true;
+    if (/\/js\/[^/]+\.js$/.test(file)) return true;
     return file.endsWith('/tasks.js') && entry.source.includes("'morning-pages'");
   },
   // The same files are served at / and /test/; count them once.

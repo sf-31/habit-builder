@@ -21,7 +21,7 @@ npx playwright install chromium   # first time only
 npm test
 ```
 
-The tests drive the real page in a headless browser and fail unless every line of `app/app.js` and `app/tasks.js` runs. Open `coverage/index.html` after a run to see line-by-line coverage. On GitHub, the tests run before each deploy, and a failure stops the deploy.
+The tests drive the real page in a headless browser and fail unless every line of `app/js/` and `app/tasks.js` runs. Open `coverage/index.html` after a run to see line-by-line coverage. On GitHub, the tests run before each deploy, and a failure stops the deploy.
 
 ## Deploying: test first, then main
 
