@@ -53,6 +53,20 @@ jobs:
           ref: test
           path: test
 
+      # Adds ?v=<commit> to every local .js/.css URL (script/link tags and
+      # module imports), so each deploy gets new URLs and browsers never mix
+      # cached files from an older deploy with new ones.
+      - name: Version asset URLs
+        run: |
+          for dir in main test; do
+            [ -d "$dir/app" ] || continue
+            v=$(git -C "$dir" rev-parse --short HEAD)
+            find "$dir/app" -name '*.html' -exec sed -i -E \
+              "s#((src|href)=\"[^\":]*\.(js|css))\"#\1?v=$v\"#g" {} +
+            find "$dir/app" -name '*.js' -exec sed -i -E \
+              "s#(from '\.[^']*\.js)'#\1?v=$v'#g" {} +
+          done
+
       - name: Assemble site
         run: |
           mkdir -p _site/test
