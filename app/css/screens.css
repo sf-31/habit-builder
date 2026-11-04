@@ -87,7 +87,7 @@ label.opt input:checked + span { background: var(--fg); color: var(--bg); }
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   gap: 2.5rem clamp(1.5rem, 4vw, 3.5rem);
 }
-.group h2, .later h2, .task-form h2 {
+.group h2, .rate h2, .later h2, .task-form h2 {
   display: flex;
   align-items: center;
   gap: 0.55rem;
@@ -116,6 +116,36 @@ label.opt input:checked + span { background: var(--fg); color: var(--bg); }
 .item-meta { margin: 0.15rem 0 0; color: var(--muted); font-size: 0.9375rem; }
 .item-note { margin: 0.35rem 0 0; font-size: 0.9375rem; max-width: 40ch; }
 .empty { margin: 0; color: var(--muted); }
+
+/* This week / this month, against a target */
+.progress { margin-bottom: clamp(2.5rem, 7vh, 4rem); }
+.target { flex-wrap: wrap; margin: 0 0 1.75rem; }
+.rates {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 2.5rem clamp(1.5rem, 4vw, 3.5rem);
+}
+.rate-pct {
+  margin: 0;
+  font-size: clamp(2.5rem, 6vw, 3.75rem);
+  font-weight: 540;
+  font-variation-settings: "opsz" 96, "wdth" 80;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.rate-of { margin: 0.3rem 0 0; color: var(--muted); }
+.meter { position: relative; height: 0.5rem; margin: 1rem 0 0.9rem; border-radius: 999px; background: var(--line); }
+.meter-fill { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: var(--tide); }
+.meter-target { position: absolute; top: -0.3rem; bottom: -0.3rem; width: 2px; margin-left: -1px; background: var(--fg); }
+.days { display: grid; grid-template-columns: repeat(7, 0.85rem); gap: 0.35rem; margin: 0; padding: 0; list-style: none; }
+.day { width: 0.85rem; height: 0.85rem; border-radius: 50%; border: 1.5px solid var(--line); }
+.day.done { background: var(--tide); border-color: var(--tide); }
+.day.missed { border-color: var(--muted); }
+.day.today { border-color: var(--fg); }
+.day.before { opacity: 0.4; }
+.rate-status { margin: 0.9rem 0 0; max-width: 34ch; font-size: 0.9375rem; }
+.rate-status.ok { font-weight: 560; }
+.rate-status.behind, .rate-status.off { color: var(--muted); }
 
 .later { margin-top: clamp(3rem, 8vh, 5rem); max-width: 40rem; }
 .queue { margin: 0; padding: 0 0 0 2.2em; }
