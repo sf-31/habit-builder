@@ -145,6 +145,54 @@ test.describe('choose build', () => {
     await expect(dry(page, '.choose-item')).toHaveCount(2);
   });
 
+  test('a one-off task can be typed in and skips the question', async ({ page }) => {
+    await open(page, CHOOSE);
+    await seed(page, CHOOSE, { tasks: mine });
+    const custom = field(page, 'custom');
+    await btn(page, 'Start').click();
+    await expect(dry(page, '.custom-form [data-error]')).toBeVisible();
+    await expect(custom).toBeFocused();
+
+    // What's typed survives a re-render.
+    await custom.fill('  Call <Gran>  ');
+    await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+    await expect(custom).toHaveValue('  Call <Gran>  ');
+
+    await btn(page, 'Start').click();
+    await btn(page, 'Start task').click();
+    await page.clock.runFor(100);
+    await expect(dry(page, '.bar-task')).toHaveText('Call <Gran>');
+    await expect(btn(page, 'Done early')).toHaveCount(0);
+    await runOut(page);
+    await expect(heading(page)).toHaveText('Call <Gran>');
+    await expect(dry(page, 'legend')).toHaveCount(0);
+    await expect(dry(page, 'input[name=note]')).toHaveCount(0);
+    await btn(page, 'Mark complete').click();
+    await settle(page);
+    await expect(heading(page)).toHaveText('See you tomorrow.');
+
+    expect((await stored(page, 'log', CHOOSE))[0]).toMatchObject({
+      taskId: 'once:call <gran>', title: 'Call <Gran>', again: null, note: '', custom: true,
+    });
+    expect(await stored(page, 'tasks', CHOOSE)).toEqual(mine);
+  });
+
+  test('one-offs get their own group in the report', async ({ page }) => {
+    await open(page, `${CHOOSE}#report`);
+    await expect(dry(page, '.group')).toHaveCount(3);
+    await seed(page, CHOOSE, { log: [
+      entry('c1', 'Water the plants', { again: 'no' }),
+      entry('once:call gran', 'Call Gran', { again: null, custom: true }),
+      entry('once:call gran', 'Call gran', { again: null, custom: true, date: '2026-11-02', finishedAt: '2026-11-02T10:00:00.000Z' }),
+    ] });
+    await expect(dry(page, '.group')).toHaveCount(4);
+    const once = dry(page, '.group:has(.mark.once)');
+    await expect(once.locator('h2')).toContainText('Just for today');
+    await expect(once.locator('.item-title')).toHaveText('Call gran');
+    await expect(once.locator('.item-meta')).toHaveText('Nov 2, done 2 times');
+    await expect(dry(page, '.group:has(.mark.unsure) .item')).toHaveCount(0);
+  });
+
   test('the report and the way back work', async ({ page }) => {
     await open(page, CHOOSE);
     await seed(page, CHOOSE, { tasks: mine, log: [entry('c1', 'Water the plants')] });

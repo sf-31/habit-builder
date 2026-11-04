@@ -15,12 +15,8 @@ export function renderReflect() {
   setP(0);
   const t = taskById(session.taskId) || { title: session.title };
   setTitle(session.early ? 'Finished early' : 'Time’s up');
-  paint(`<div class="frame">${bar(dateLeft())}
-    <main class="screen reflect">
-      <p class="count">${session.early ? 'Finished early' : 'Time’s up'}</p>
-      <h1 class="task">${esc(t.title)}</h1>
-      <form class="reflect-form" data-form novalidate>
-        <fieldset class="choice">
+  // A one-off task from the choose screen skips the question and the note.
+  const questions = session.custom ? '' : `<fieldset class="choice">
           <legend>Would you do this again?</legend>
           <div class="options">
             <label class="opt"><input type="radio" name="again" value="yes"><span>Yes</span></label>
@@ -31,7 +27,13 @@ export function renderReflect() {
         <label class="note">
           <span>Anything to remember? Optional.</span>
           <input type="text" name="note" maxlength="280" autocomplete="off" placeholder="${t.early ? 'What did you find?' : 'How it went'}">
-        </label>
+        </label>`;
+  paint(`<div class="frame">${bar(dateLeft())}
+    <main class="screen reflect">
+      <p class="count">${session.early ? 'Finished early' : 'Time’s up'}</p>
+      <h1 class="task">${esc(t.title)}</h1>
+      <form class="reflect-form" data-form novalidate>
+        ${questions}
         <div class="actions">
           <button class="btn primary big" type="submit">Mark complete</button>
         </div>
@@ -44,7 +46,7 @@ export function save(form) {
   const session = state.session;
   const again = form.querySelector('input[name="again"]:checked');
   const err = form.querySelector('[data-error]');
-  if (!again) { err.hidden = false; form.querySelector('input[name="again"]').focus(); return; }
+  if (!again && !session.custom) { err.hidden = false; form.querySelector('input[name="again"]').focus(); return; }
   const log = getLog();
   log.push({
     taskId: session.taskId,
@@ -53,9 +55,10 @@ export function save(form) {
     finishedAt: new Date().toISOString(),
     minutes: Math.max(1, Math.round(elapsed() / 60000)),
     early: !!session.early,
-    again: again.value,
-    note: form.note.value.trim(),
+    again: again ? again.value : null,
+    note: session.custom ? '' : form.note.value.trim(),
     cycle: getCycle(),
+    ...(session.custom && { custom: true }),
   });
   store.set('log', log);
   store.del('pick');
