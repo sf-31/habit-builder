@@ -58,9 +58,12 @@ test.describe('timer length', () => {
     expect(p).toBeCloseTo(0.25, 2);
 
     await runOut(page, 15 * 60 * 1000);
+    await expect(dry(page, '[data-used]')).toHaveText('20 min.');
     await dry(page, '.opt:has(span:text-is("Yes"))').click();
     await btn(page, 'Mark complete').click();
-    expect((await stored(page, 'log'))[0].minutes).toBe(20);
+    expect((await stored(page, 'log'))[0]).toMatchObject({ minutes: 20, length: 20 });
+    await page.goto(`${MAIN}#report`);
+    await expect(dry(page, '.item-meta')).toHaveText('Nov 3, 20 min');
   });
 
   test('the test build scales the length to seconds', async ({ page }) => {

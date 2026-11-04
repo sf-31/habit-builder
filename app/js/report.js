@@ -1,7 +1,7 @@
 // The report: every task grouped by whether you'd do it again, plus export.
 import {
   IS_TEST, state, store, esc, dayKey, shortDate, getLog, getCycle,
-  setP, setFull, stopLoops, paint, setTitle, bar,
+  setP, setFull, stopLoops, paint, setTitle, bar, timeNote,
 } from './core.js';
 import { progressHtml } from './progress.js';
 
@@ -36,7 +36,8 @@ export function renderReport() {
     const list = items.length
       ? `<ul class="items">${items.map(({ last, times }) => {
           const meta = [shortDate(last.date)];
-          if (last.early) meta.push('finished early');
+          const time = timeNote(last.minutes, last.length, last.early);
+          if (time) meta.push(time);
           if (times > 1) meta.push(`done ${times} times`);
           return `<li class="item">
             <p class="item-title">${esc(last.title)}</p>
