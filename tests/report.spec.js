@@ -10,7 +10,8 @@ test.describe('report', () => {
         entry('walk', 'Go on a walk', { again: 'no', date: '2026-10-28', finishedAt: '2026-10-28T10:00:00Z' }),
         entry('walk', 'Go on a walk', { again: 'yes', date: '2026-11-01', finishedAt: '2026-11-01T10:00:00Z', cycle: 2 }),
         entry('meditate', 'Meditate', { again: 'yes', date: '2026-11-02', finishedAt: '2026-11-02T10:00:00Z' }),
-        entry('recipe', 'Find a recipe', { again: 'no', early: true, note: '<script>x</script>' }),
+        entry('recipe', 'Find a recipe', { again: 'no', early: true, minutes: 6, length: 15, note: '<script>x</script>' }),
+        entry('stretch', 'Stretch', { again: 'unsure', early: true, minutes: 3 }),
         entry('odd', 'Odd answer', { again: 'maybe' }),
       ],
     });
@@ -22,9 +23,11 @@ test.describe('report', () => {
     await expect(group('Do again').locator('.item-title')).toHaveText(['Meditate', 'Go on a walk']);
     await expect(group('Do again').locator('.n')).toHaveText('2');
     await expect(group('Do again').locator('.item-meta').nth(1)).toHaveText('Nov 1, done 2 times');
-    await expect(group('Skip next time').locator('.item-meta')).toHaveText('Nov 1, finished early');
+    await expect(group('Skip next time').locator('.item-meta')).toHaveText('Nov 1, finished early after 6 of 15 min');
     await expect(group('Skip next time').locator('.item-note')).toHaveText('<script>x</script>');
-    await expect(group('Not sure').locator('.item-title')).toHaveText('Odd answer');
+    await expect(group('Not sure').locator('.item-title')).toHaveText(['Stretch', 'Odd answer']);
+    // Entries saved before the length was recorded.
+    await expect(group('Not sure').locator('.item-meta').first()).toHaveText('Nov 1, finished early after 3 min');
     await expect(dry(page, 'main')).not.toContainText('Still to come');
     await expect(dry(page, 'main')).not.toContainText('Import');
     await expect(btn(page, 'Clear test data')).toHaveCount(0);
@@ -106,7 +109,8 @@ test.describe('test build', () => {
     await complete(page);
     expect(await stored(page, 'log', TEST)).toHaveLength(1);
     expect(await stored(page, 'log', MAIN)).toBeNull();
-    expect((await stored(page, 'log', TEST))[0].minutes).toBe(1);
+    // The test build counts in its scaled minutes: 5 seconds is 15.
+    expect((await stored(page, 'log', TEST))[0]).toMatchObject({ minutes: 15, length: 15 });
   });
 
   test('lets you pick which task is shown', async ({ page }) => {

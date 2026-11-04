@@ -137,9 +137,17 @@ export const reportLink = IS_CHOOSE
 export const saveSession = () => store.set('session', state.session);
 export const clearSession = () => { state.session = null; store.del('session'); };
 // Sessions saved before the length was adjustable have no minutes: 15.
-export const sessionMs = () => msFor(state.session.minutes ?? 15);
+export const sessionMinutes = () => state.session.minutes ?? 15;
+export const sessionMs = () => msFor(sessionMinutes());
 export function elapsed() {
   const s = state.session;
   const now = s.endedAt ?? s.pausedAt ?? Date.now();
   return Math.max(0, now - s.startedAt - s.pausedTotal);
+}
+// Minutes actually spent, at least 1. The test build counts its scaled minutes.
+export const usedMinutes = () => Math.max(1, Math.round(elapsed() / msFor(1)));
+// How long a session took, said only when it isn't the usual full 15 minutes.
+export function timeNote(minutes, length, early) {
+  if (early) return `finished early after ${minutes}${length ? ` of ${length}` : ''} min`;
+  return minutes === 15 ? '' : `${minutes} min`;
 }

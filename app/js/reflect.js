@@ -1,7 +1,7 @@
 // After the timer: "Would you do this again?", then save to the log.
 import {
   state, store, esc, dayKey, getLog, getCycle, taskById, setP, setFull, stopLoops, animateP,
-  paint, announce, setTitle, bar, dateLeft, clearSession, elapsed,
+  paint, announce, setTitle, bar, dateLeft, clearSession, usedMinutes, timeNote, sessionMinutes,
 } from './core.js';
 import { releaseWake } from './effects.js';
 import { renderHome } from './home.js';
@@ -28,10 +28,12 @@ export function renderReflect() {
           <span>Anything to remember? Optional.</span>
           <input type="text" name="note" maxlength="280" autocomplete="off" placeholder="${t.early ? 'What did you find?' : 'How it went'}">
         </label>`;
+  const used = timeNote(usedMinutes(), sessionMinutes(), session.early);
   paint(`<div class="frame">${bar(dateLeft())}
     <main class="screen reflect">
       <p class="count">${session.early ? 'Finished early' : 'Time’s up'}</p>
       <h1 class="task">${esc(t.title)}</h1>
+      ${used ? `<p class="hint" data-used>${used[0].toUpperCase() + used.slice(1)}.</p>` : ''}
       <form class="reflect-form" data-form novalidate>
         ${questions}
         <div class="actions">
@@ -53,7 +55,8 @@ export function save(form) {
     title: session.title,
     date: dayKey(),
     finishedAt: new Date().toISOString(),
-    minutes: Math.max(1, Math.round(elapsed() / 60000)),
+    minutes: usedMinutes(),
+    length: sessionMinutes(),
     early: !!session.early,
     again: again ? again.value : null,
     note: session.custom ? '' : form.note.value.trim(),

@@ -46,6 +46,7 @@ test.describe('finishing', () => {
     await startTask(page);
     await runOut(page);
     await expect(heading(page)).toHaveText('Do stream of consciousness writing (like morning pages)');
+    await expect(dry(page, '[data-used]')).toHaveCount(0);
     await expect(dry(page, 'input[name=note]')).toHaveAttribute('placeholder', 'How it went');
     await btn(page, 'Mark complete').click();
     await expect(dry(page, '[data-error]')).toBeVisible();
@@ -79,10 +80,11 @@ test.describe('finishing', () => {
     await expect(dry(page, '.count')).toHaveText('Finished early');
     await expect(page).toHaveTitle('Finished early');
     await expect(dry(page, 'input[name=note]')).toHaveAttribute('placeholder', 'What did you find?');
+    await expect(dry(page, '[data-used]')).toHaveText('Finished early after 4 of 15 min.');
     expect(await calls(page)).not.toContain('osc');
     await complete(page, 'Yes', 'Big Thief');
     const log = await stored(page, 'log');
-    expect(log[1]).toMatchObject({ taskId: 'new-artist', early: true, minutes: 4, note: 'Big Thief' });
+    expect(log[1]).toMatchObject({ taskId: 'new-artist', early: true, minutes: 4, length: 15, note: 'Big Thief' });
   });
 
   test('tasks without a goal have no done early button', async ({ page }) => {
