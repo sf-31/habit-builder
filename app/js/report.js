@@ -3,6 +3,7 @@ import {
   IS_TEST, state, store, esc, dayKey, shortDate, getLog, getCycle,
   setP, setFull, stopLoops, paint, setTitle, bar,
 } from './core.js';
+import { progressHtml } from './progress.js';
 
 const GROUPS = [
   { key: 'yes', name: 'Do again' },
@@ -53,6 +54,7 @@ export function renderReport() {
   paint(`<div class="frame">${bar('<p><a class="link" href="#today">Today’s task</a></p>')}
     <main class="report">
       <h1>Your report</h1>
+      ${progressHtml()}
       <div class="groups">${groupHtml}</div>
       <footer class="data">
         <button class="btn quiet" data-act="export">Export data</button>
@@ -75,6 +77,6 @@ export function exportData() {
 
 export function clearTest() {
   if (!confirm('Delete all test data in this browser?')) return;
-  ['log', 'cycle', 'session', 'pick', 'tasks', 'nextId'].forEach(store.del);
+  ['log', 'cycle', 'session', 'pick', 'tasks', 'nextId', 'target'].forEach(store.del);
   renderReport();
 }

@@ -5,6 +5,7 @@ import { renderHome, restart, customTask, changeLength } from './home.js';
 import { start, startTimer, runTimer, tick, togglePause, finish, quit } from './timer.js';
 import { renderReflect, save } from './reflect.js';
 import { renderReport, exportData, clearTest } from './report.js';
+import { changeTarget } from './progress.js';
 import { renderManage, saveTask, editTask, cancelEdit, removeTask, useStarter } from './manage.js';
 
 // ---------- events ----------
@@ -19,6 +20,8 @@ const actions = {
   restart,
   shorter: () => changeLength(-1),
   longer: () => changeLength(1),
+  'target-down': () => changeTarget(-1, renderReport),
+  'target-up': () => changeTarget(1, renderReport),
   export: exportData,
   clear: clearTest,
   'edit-task': editTask,
