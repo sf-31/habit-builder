@@ -87,7 +87,7 @@ label.opt input:checked + span { background: var(--fg); color: var(--bg); }
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   gap: 2.5rem clamp(1.5rem, 4vw, 3.5rem);
 }
-.group h2, .later h2 {
+.group h2, .later h2, .task-form h2 {
   display: flex;
   align-items: center;
   gap: 0.55rem;
@@ -155,6 +155,54 @@ label.opt input:checked + span { background: var(--fg); color: var(--bg); }
   border-radius: 999px;
 }
 
+/* ---------- Choose build ---------- */
+
+.bar .links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.25rem 1.25rem; }
+
+.choose { align-self: start; padding-top: clamp(1rem, 5vh, 3rem); }
+.choose .task { font-size: clamp(2.25rem, 6.5vw, 5rem); max-width: 16ch; margin-bottom: clamp(1.25rem, 4vh, 2.5rem); }
+.choose-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+  gap: 0.75rem;
+}
+.choose-item {
+  display: grid;
+  gap: 0.3rem;
+  width: 100%;
+  height: 100%;
+  padding: 1rem 1.2rem 1.1rem;
+  font: inherit;
+  text-align: left;
+  color: var(--fg);
+  background: transparent;
+  border: 1.5px solid var(--line);
+  border-radius: 1rem;
+  cursor: pointer;
+  transition: border-color 120ms, background-color 120ms;
+}
+.choose-item:hover { border-color: var(--fg); background: color-mix(in srgb, var(--fg) 5%, transparent); }
+.choose-item:focus-visible { border-radius: 1rem; }
+.choose-title { font-size: 1.1875rem; font-weight: 600; line-height: 1.25; }
+.choose-hint { color: var(--muted); font-size: 0.9375rem; line-height: 1.4; }
+.choose-meta { margin-top: 0.2rem; color: var(--muted); font-size: 0.8125rem; }
+
+.manage-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: 2.5rem clamp(1.5rem, 5vw, 4rem);
+  align-items: start;
+}
+.task-form .note:first-of-type { margin-top: 0; }
+.check { display: flex; gap: 0.6rem; align-items: baseline; margin-top: 1.5rem; cursor: pointer; }
+.check input { accent-color: var(--fg); width: 1.05rem; height: 1.05rem; flex: none; }
+.task-form .actions { margin-top: 1.75rem; }
+.item-acts { display: flex; gap: 0.75rem; margin: 0.25rem 0 0 -0.35em; }
+.item-acts .btn { font-size: 0.9375rem; padding-block: 0.3em; }
+
 .sr-only {
   position: absolute;
   width: 1px; height: 1px;
@@ -171,5 +219,5 @@ label.opt input:checked + span { background: var(--fg); color: var(--bg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .btn, .opt span, .clock { transition: none; }
+  .btn, .opt span, .clock, .choose-item { transition: none; }
 }

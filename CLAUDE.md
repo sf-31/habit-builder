@@ -38,6 +38,7 @@ No file may exceed 300 lines (`package-lock.json` excepted). `.claude/hooks/max-
 - **Task selection**: the next task is the first in `TASKS` whose id isn't logged in the current `cycle`. A missed day doesn't skip anything. "Start the list again" increments `cycle`.
 - **Session persistence**: the in-progress timer is saved in storage (`session`) with `startedAt`/`pausedAt`/`pausedTotal`/`endedAt`, so reloads resume the timer or jump to the reflect question. Elapsed time is computed from timestamps, not counted. A `setTimeout` backs up `requestAnimationFrame` so the end fires in background tabs.
 - **Storage** goes through the `store` wrapper (try/catch'd, JSON). Keys are prefixed `fifteen:` or `fifteen:test:`.
+- **Choose build**: `app/choose/index.html` loads the same modules from `../`. When the path contains `/choose/`, `IS_CHOOSE` makes tasks come from storage (`tasks`, edited on the `#tasks` screen in `manage.js`, new ids `c1`, `c2`… from a `nextId` counter) instead of `tasks.js`, and the start screen lists every task to pick from rather than choosing the next one. It has its own storage prefix (`fifteen:choose:` / `fifteen:test:choose:`), is noindexed, and nothing in the main build links to it. `/test/choose/` is its test build.
 - **Test build**: when the path contains `/test/`, `IS_TEST` switches to a 5-second timer, a separate storage prefix, a "Test build" tag, a task picker on the start screen, and a "Clear test data" button.
 
 ## Tests
