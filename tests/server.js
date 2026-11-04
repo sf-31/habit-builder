@@ -1,5 +1,6 @@
 // Serves app/ at / (the main build) and again at /test/ (the test build),
-// mirroring how the deploy workflow lays out the site.
+// mirroring how the deploy workflow lays out the site. The choose build is
+// app/choose/, so it's at /choose/ and /test/choose/.
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -10,7 +11,8 @@ const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/cs
 
 http.createServer((req, res) => {
   let p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-  if (p === '/test') { res.writeHead(301, { Location: '/test/' }); return res.end(); }
+  // Like GitHub Pages: /test, /choose and /test/choose get a trailing slash.
+  if (!p.endsWith('/') && !path.extname(p)) { res.writeHead(301, { Location: p + '/' }); return res.end(); }
   if (p.startsWith('/test/')) p = p.slice(5);
   if (p.endsWith('/')) p += 'index.html';
   const file = path.join(ROOT, path.normalize(p));
