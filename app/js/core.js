@@ -1,12 +1,16 @@
 // Config, storage, shared state and the helpers every screen uses.
 
-export const TASKS = Array.isArray(window.TASKS) ? window.TASKS : [];
+// The built-in list from tasks.js. The choose build only uses it as a starter list.
+export const BUILTIN = Array.isArray(window.TASKS) ? window.TASKS : [];
 
 // The test build is served from /test/. It keeps its own data.
 export const IS_TEST = /\/test(\/|$)/.test(location.pathname);
+// The choose build (/choose/, nothing links to it) keeps its own editable
+// task list and lets you pick each day's task. It also keeps its own data.
+export const IS_CHOOSE = /\/choose(\/|$)/.test(location.pathname);
 // The test build uses a 5-second timer so you can run through the whole flow quickly.
 export const TOTAL_MS = IS_TEST ? 5 * 1000 : 15 * 60 * 1000;
-const PREFIX = IS_TEST ? 'fifteen:test:' : 'fifteen:';
+const PREFIX = `fifteen:${IS_TEST ? 'test:' : ''}${IS_CHOOSE ? 'choose:' : ''}`;
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
 export const store = {
@@ -54,7 +58,8 @@ export const fmtClock = (sec) => `${Math.floor(sec / 60)}:${pad(sec % 60)}`;
 
 export const getLog = () => store.get('log', []);
 export const getCycle = () => store.get('cycle', 1);
-export const taskById = (id) => TASKS.find((t) => t.id === id);
+export const getTasks = () => (IS_CHOOSE ? store.get('tasks', []) : BUILTIN);
+export const taskById = (id) => getTasks().find((t) => t.id === id);
 // Test build only: a task picked from the menu on the start screen.
 export const pickedTask = () => (IS_TEST ? taskById(store.get('pick', null)) : null);
 export const currentTask = () => pickedTask() || upcoming()[0];
@@ -62,7 +67,7 @@ export const doneToday = () => getLog().some((r) => r.date === dayKey());
 function upcoming() {
   const cycle = getCycle();
   const done = new Set(getLog().filter((r) => r.cycle === cycle).map((r) => r.taskId));
-  return TASKS.filter((t) => !done.has(t.id));
+  return getTasks().filter((t) => !done.has(t.id));
 }
 
 export function setP(p) {
@@ -113,7 +118,9 @@ export function bar(left, right = '') {
   return `<header class="bar">${left}${tag ? `<p>${tag}</p>` : ''}${right}</header>`;
 }
 export const dateLeft = () => `<p>${esc(longToday())}</p>`;
-export const reportLink = '<a class="link" href="#report">Your report</a>';
+export const reportLink = IS_CHOOSE
+  ? '<p class="links"><a class="link" href="#tasks">Your tasks</a><a class="link" href="#report">Your report</a></p>'
+  : '<a class="link" href="#report">Your report</a>';
 
 // ---------- session ----------
 

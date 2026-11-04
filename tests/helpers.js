@@ -3,6 +3,8 @@ const { test, expect } = require('./fixtures');
 
 const MAIN = '/';
 const TEST = '/test/';
+const CHOOSE = '/choose/';
+const TEST_CHOOSE = '/test/choose/';
 const MORNING = new Date('2026-11-03T09:00:00');
 const FIFTEEN_MIN = 15 * 60 * 1000;
 
@@ -22,9 +24,12 @@ async function open(page, path = MAIN, { time = MORNING } = {}) {
 // Lets the app's short timers and animations finish.
 const settle = (page) => page.clock.runFor(2000);
 
+// Each build keeps its own storage.
+const prefixFor = (path) => `fifteen:${path.startsWith(TEST) ? 'test:' : ''}${path.endsWith(CHOOSE) ? 'choose:' : ''}`;
+
 // Writes app storage, then reloads so the app boots with it.
 async function seed(page, path, data) {
-  const prefix = path === TEST ? 'fifteen:test:' : 'fifteen:';
+  const prefix = prefixFor(path);
   await page.evaluate(({ prefix, data }) => {
     for (const [k, v] of Object.entries(data)) {
       localStorage.setItem(prefix + k, typeof v === 'string' ? v : JSON.stringify(v));
@@ -34,7 +39,7 @@ async function seed(page, path, data) {
 }
 
 const stored = (page, key, path = MAIN) =>
-  page.evaluate((k) => JSON.parse(localStorage.getItem(k)), (path === TEST ? 'fifteen:test:' : 'fifteen:') + key);
+  page.evaluate((k) => JSON.parse(localStorage.getItem(k)), prefixFor(path) + key);
 
 const calls = (page) => page.evaluate(() => window.__calls);
 
@@ -70,5 +75,5 @@ async function complete(page, answer = 'Yes', note = '') {
 }
 
 module.exports = {
-  test, expect, MAIN, TEST, MORNING, FIFTEEN_MIN, dry, heading, btn, open, settle, seed, stored, calls, entry, startTask, advance, runOut, complete,
+  test, expect, MAIN, TEST, CHOOSE, TEST_CHOOSE, MORNING, FIFTEEN_MIN, dry, heading, btn, open, settle, seed, stored, calls, entry, startTask, advance, runOut, complete,
 };

@@ -74,6 +74,6 @@ export function exportData() {
 
 export function clearTest() {
   if (!confirm('Delete all test data in this browser?')) return;
-  ['log', 'cycle', 'session', 'pick'].forEach(store.del);
+  ['log', 'cycle', 'session', 'pick', 'tasks', 'nextId'].forEach(store.del);
   renderReport();
 }

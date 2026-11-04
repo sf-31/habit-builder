@@ -1,15 +1,17 @@
 // Entry point: wires up events and routing, then restores any saved session.
-import { TOTAL_MS, state, store, dry, syncScroll, saveSession, elapsed } from './core.js';
+import { TOTAL_MS, IS_CHOOSE, state, store, dry, syncScroll, saveSession, elapsed, taskById } from './core.js';
 import { primeAudio, requestWake } from './effects.js';
 import { renderHome, restart } from './home.js';
 import { start, startTimer, runTimer, tick, togglePause, finish, quit } from './timer.js';
 import { renderReflect, save } from './reflect.js';
 import { renderReport, exportData, clearTest } from './report.js';
+import { renderManage, saveTask, editTask, cancelEdit, removeTask, useStarter } from './manage.js';
 
 // ---------- events ----------
 
 const actions = {
-  start,
+  start: () => start(),
+  choose: (b) => start(taskById(b.dataset.id)),
   begin: () => { primeAudio(); requestWake(); startTimer(); },
   pause: togglePause,
   early: () => finish(true),
@@ -17,6 +19,10 @@ const actions = {
   restart,
   export: exportData,
   clear: clearTest,
+  'edit-task': editTask,
+  'cancel-edit': cancelEdit,
+  'remove-task': removeTask,
+  starter: useStarter,
 };
 
 dry.addEventListener('click', (e) => {
@@ -25,6 +31,7 @@ dry.addEventListener('click', (e) => {
 });
 dry.addEventListener('submit', (e) => {
   if (e.target.matches('[data-form]')) { e.preventDefault(); save(e.target); }
+  if (e.target.matches('[data-task-form]')) { e.preventDefault(); saveTask(e.target); }
 });
 dry.addEventListener('change', (e) => {
   if (e.target.name === 'again') {
@@ -60,6 +67,7 @@ function route() {
     return;
   }
   if (location.hash === '#report') renderReport();
+  else if (location.hash === '#tasks' && IS_CHOOSE) renderManage();
   else renderHome();
   window.scrollTo(0, 0);
 }

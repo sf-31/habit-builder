@@ -9,8 +9,8 @@ import { renderReflect } from './reflect.js';
 
 let lastSec = -1;
 
-export function start() {
-  const t = currentTask();
+// Main build: today's task in order. Choose build: the task that was picked.
+export function start(t = currentTask()) {
   primeAudio();
   askNotify();
   requestWake();
