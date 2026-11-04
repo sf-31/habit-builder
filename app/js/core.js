@@ -10,6 +10,12 @@ export const IS_TEST = /\/test(\/|$)/.test(location.pathname);
 export const IS_CHOOSE = /\/choose(\/|$)/.test(location.pathname);
 // The test build uses a 5-second timer so you can run through the whole flow quickly.
 export const TOTAL_MS = IS_TEST ? 5 * 1000 : 15 * 60 * 1000;
+// The timer length can be changed on the start screen, in 5-minute steps.
+// The test build scales it the same way, so 15 "minutes" there is 5 seconds.
+export const MIN_MINUTES = 5;
+export const MAX_MINUTES = 60;
+export const STEP_MINUTES = 5;
+export const msFor = (minutes) => (TOTAL_MS * minutes) / 15;
 const PREFIX = `fifteen:${IS_TEST ? 'test:' : ''}${IS_CHOOSE ? 'choose:' : ''}`;
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -56,6 +62,10 @@ export const shortDate = (key) => {
 const longToday = () => new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
 export const fmtClock = (sec) => `${Math.floor(sec / 60)}:${pad(sec % 60)}`;
 
+export const getMinutes = () => {
+  const m = store.get('minutes', 15);
+  return Number.isInteger(m) && m % STEP_MINUTES === 0 && m >= MIN_MINUTES && m <= MAX_MINUTES ? m : 15;
+};
 export const getLog = () => store.get('log', []);
 export const getCycle = () => store.get('cycle', 1);
 export const getTasks = () => (IS_CHOOSE ? store.get('tasks', []) : BUILTIN);
@@ -126,6 +136,8 @@ export const reportLink = IS_CHOOSE
 
 export const saveSession = () => store.set('session', state.session);
 export const clearSession = () => { state.session = null; store.del('session'); };
+// Sessions saved before the length was adjustable have no minutes: 15.
+export const sessionMs = () => msFor(state.session.minutes ?? 15);
 export function elapsed() {
   const s = state.session;
   const now = s.endedAt ?? s.pausedAt ?? Date.now();

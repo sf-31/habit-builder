@@ -1,7 +1,7 @@
 // Entry point: wires up events and routing, then restores any saved session.
-import { TOTAL_MS, IS_CHOOSE, state, store, dry, syncScroll, saveSession, elapsed, taskById } from './core.js';
+import { IS_CHOOSE, sessionMs, state, store, dry, syncScroll, saveSession, elapsed, taskById } from './core.js';
 import { primeAudio, requestWake } from './effects.js';
-import { renderHome, restart, customTask } from './home.js';
+import { renderHome, restart, customTask, changeLength } from './home.js';
 import { start, startTimer, runTimer, tick, togglePause, finish, quit } from './timer.js';
 import { renderReflect, save } from './reflect.js';
 import { renderReport, exportData, clearTest } from './report.js';
@@ -17,6 +17,8 @@ const actions = {
   early: () => finish(true),
   quit,
   restart,
+  shorter: () => changeLength(-1),
+  longer: () => changeLength(1),
   export: exportData,
   clear: clearTest,
   'edit-task': editTask,
@@ -83,8 +85,8 @@ window.addEventListener('hashchange', route);
 const saved = store.get('session', null);
 if (saved && saved.startedAt) {
   state.session = saved;
-  if (!saved.endedAt && elapsed() >= TOTAL_MS) {
-    saved.endedAt = saved.startedAt + saved.pausedTotal + TOTAL_MS;
+  if (!saved.endedAt && elapsed() >= sessionMs()) {
+    saved.endedAt = saved.startedAt + saved.pausedTotal + sessionMs();
     saved.pausedAt = null;
     saveSession();
   }
