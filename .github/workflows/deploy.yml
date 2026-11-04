@@ -20,7 +20,23 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Runs the tests on the branch that was pushed. A failure stops the deploy.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+        env:
+          CI: true
+
   build:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Check out main

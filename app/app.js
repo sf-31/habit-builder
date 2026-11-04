@@ -41,7 +41,7 @@
 
   // ---------- helpers ----------
 
-  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => (
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
   ));
   const pad = (n) => String(n).padStart(2, '0');
@@ -59,7 +59,6 @@
   // Test build only: a task picked from the menu on the start screen.
   const pickedTask = () => (IS_TEST ? taskById(store.get('pick', null)) : null);
   const currentTask = () => pickedTask() || upcoming()[0];
-  const position = (t) => TASKS.indexOf(t) + 1;
   const doneToday = () => getLog().some((r) => r.date === dayKey());
   function upcoming() {
     const cycle = getCycle();
@@ -77,7 +76,7 @@
   function animateP(to, ms, done) {
     cancelAnimationFrame(frame);
     const from = curP;
-    if (reduceMotion.matches || ms <= 0) { setP(to); done && done(); return; }
+    if (reduceMotion.matches) { setP(to); done && done(); return; }
     const t0 = performance.now();
     const step = (now) => {
       const k = Math.min(1, (now - t0) / ms);
@@ -122,7 +121,6 @@
   const saveSession = () => store.set('session', session);
   const clearSession = () => { session = null; store.del('session'); };
   function elapsed() {
-    if (!session || !session.startedAt) return 0;
     const now = session.endedAt ?? session.pausedAt ?? Date.now();
     return Math.max(0, now - session.startedAt - session.pausedTotal);
   }
@@ -238,7 +236,6 @@
 
   function start() {
     const t = currentTask();
-    if (!t) return;
     primeAudio();
     askNotify();
     requestWake();
@@ -292,7 +289,6 @@
 
   function tick() {
     cancelAnimationFrame(frame);
-    if (mode !== 'timer' || !session) return;
     const e = elapsed();
     setP(Math.min(1, e / TOTAL_MS));
     const sec = Math.ceil(Math.max(0, TOTAL_MS - e) / 1000);
@@ -313,7 +309,6 @@
   }
 
   function togglePause() {
-    if (!session) return;
     if (session.pausedAt) {
       session.pausedTotal += Date.now() - session.pausedAt;
       session.pausedAt = null;

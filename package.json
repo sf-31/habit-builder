@@ -1,0 +1,12 @@
+{
+  "name": "fifteen",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "serve": "node tests/server.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.48.2",
+    "monocart-coverage-reports": "2.11.1"
+  }
+}
