@@ -285,22 +285,13 @@ label.opt input:checked + span { background: var(--fg); color: var(--bg); }
 
 .report { padding: clamp(1.5rem, 6vh, 4rem) 0 4rem; }
 .report h1 {
-  margin: 0 0 0.25em -0.03em;
+  margin: 0 0 clamp(2rem, 6vh, 3.5rem) -0.03em;
   font-size: clamp(2.75rem, 7vw, 5.5rem);
   font-weight: 540;
   font-variation-settings: "opsz" 96, "wdth" 80;
   line-height: 0.93;
   letter-spacing: -0.025em;
 }
-.summary {
-  margin: 0 0 clamp(2.5rem, 7vh, 4.5rem);
-  max-width: 44ch;
-  font-size: clamp(1.1875rem, 2vw, 1.5rem);
-  line-height: 1.4;
-  color: var(--muted);
-  text-wrap: pretty;
-}
-.summary strong { color: var(--fg); font-weight: 600; }
 
 .groups {
   display: grid;
@@ -355,6 +346,26 @@ label.opt input:checked + span { background: var(--fg); color: var(--bg); }
 }
 .data .btn { font-size: 0.9375rem; }
 
+.pick {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+  margin-bottom: clamp(1.5rem, 5vh, 3rem);
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+.pick select {
+  width: 100%;
+  max-width: 26rem;
+  min-width: 0;
+  padding: 0.45em 0.8em;
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1.5px solid var(--fg);
+  border-radius: 999px;
+}
+
 .sr-only {
   position: absolute;
   width: 1px; height: 1px;
@@ -374,4 +385,3 @@ label.opt input:checked + span { background: var(--fg); color: var(--bg); }
   .btn, .opt span, .clock { transition: none; }
 }
 
-.report h1 + .groups { margin-top: clamp(2rem, 6vh, 3.5rem); }

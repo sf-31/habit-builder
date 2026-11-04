@@ -34,7 +34,6 @@
   let frame = 0;
   let endTimer = 0;
   let session = null;
-  let runAhead = false;
   let audio = null;
   let wakeLock = null;
   let curP = 0;
@@ -53,16 +52,13 @@
   };
   const longToday = () => new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
   const fmtClock = (sec) => `${Math.floor(sec / 60)}:${pad(sec % 60)}`;
-  const fmtDuration = (min) => {
-    if (min < 60) return `${min} ${min === 1 ? 'minute' : 'minutes'}`;
-    const h = Math.floor(min / 60), m = min % 60;
-    return `${h} ${h === 1 ? 'hour' : 'hours'}${m ? ` ${m} min` : ''}`;
-  };
-  const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
   const getLog = () => store.get('log', []);
   const getCycle = () => store.get('cycle', 1);
   const taskById = (id) => TASKS.find((t) => t.id === id);
+  // Test build only: a task picked from the menu on the start screen.
+  const pickedTask = () => (IS_TEST ? taskById(store.get('pick', null)) : null);
+  const currentTask = () => pickedTask() || upcoming()[0];
   const position = (t) => TASKS.indexOf(t) + 1;
   const doneToday = () => getLog().some((r) => r.date === dayKey());
   function upcoming() {
@@ -193,7 +189,8 @@
     releaseWake();
     setTitle('Fifteen');
 
-    const next = upcoming()[0];
+    const picked = pickedTask();
+    const next = currentTask();
     let body;
 
     if (!TASKS.length) {
@@ -211,14 +208,10 @@
           <button class="btn" data-act="restart">Start the list again</button>
         </div>
       </main>`;
-    } else if (doneToday() && !runAhead) {
+    } else if (doneToday() && !picked) {
       body = `<main class="screen">
         <p class="count">Done for today</p>
         <h1 class="task">See you tomorrow.</h1>
-        <p class="hint">Up next: ${esc(next.title)}</p>
-        <div class="actions">
-          <button class="btn quiet" data-act="ahead">Start the next one now</button>
-        </div>
       </main>`;
     } else {
       const aside = next.early ? '<p class="aside">You can finish early once you’ve found it.</p>' : '';
@@ -232,11 +225,19 @@
       </main>`;
     }
 
+    if (IS_TEST && TASKS.length) body = body.replace('<main class="screen">', `<main class="screen">${pickerHtml(picked)}`);
     paint(`<div class="frame">${bar(dateLeft(), reportLink)}${body}</div>`);
   }
 
+  function pickerHtml(picked) {
+    const opts = TASKS.map((t) => `<option value="${esc(t.id)}"${picked === t ? ' selected' : ''}>${esc(t.title)}</option>`).join('');
+    return `<label class="pick">Show task
+      <select data-pick><option value="">Next in order</option>${opts}</select>
+    </label>`;
+  }
+
   function start() {
-    const t = upcoming()[0];
+    const t = currentTask();
     if (!t) return;
     primeAudio();
     askNotify();
@@ -402,8 +403,8 @@
       cycle: getCycle(),
     });
     store.set('log', log);
+    store.del('pick');
     clearSession();
-    runAhead = false;
     announce('Marked complete.');
     renderHome();
     setP(1);
@@ -419,7 +420,6 @@
   function restart() {
     if (!confirm('Start the list again from the first task? Your report keeps everything you’ve done.')) return;
     store.set('cycle', getCycle() + 1);
-    runAhead = false;
     location.hash = '';
     renderHome();
   }
@@ -451,16 +451,6 @@
     for (const e of byTask.values()) (groups[e.last.again] || groups.unsure).push(e);
     for (const g of Object.values(groups)) g.sort((a, b) => b.last.finishedAt.localeCompare(a.last.finishedAt));
 
-    const minutes = log.reduce((s, r) => s + (r.minutes || 0), 0);
-
-    let summary = '';
-    if (log.length) {
-      summary = `<strong>${plural(log.length, 'task', 'tasks')}</strong> done, ${fmtDuration(minutes)} in all. `
-        + `You’d do ${groups.yes.length} again`
-        + `${groups.unsure.length ? `, aren’t sure about ${groups.unsure.length}` : ''}`
-        + `${groups.no.length ? `, and would skip ${groups.no.length}` : ''}.`;
-    }
-
     const groupHtml = GROUPS.map(({ key, name }) => {
       const items = groups[key];
       const list = items.length
@@ -484,7 +474,6 @@
     paint(`<div class="frame">${bar('<p><a class="link" href="#today">Today’s task</a></p>')}
       <main class="report">
         <h1>Your report</h1>
-        ${summary ? `<p class="summary">${summary}</p>` : ''}
         <div class="groups">${groupHtml}</div>
         <footer class="data">
           <button class="btn quiet" data-act="export">Export data</button>
@@ -507,7 +496,7 @@
 
   function clearTest() {
     if (!confirm('Delete all test data in this browser?')) return;
-    ['log', 'cycle', 'session'].forEach(store.del);
+    ['log', 'cycle', 'session', 'pick'].forEach(store.del);
     renderReport();
   }
 
@@ -515,7 +504,6 @@
 
   const actions = {
     start,
-    ahead: () => { runAhead = true; start(); },
     begin: () => { primeAudio(); requestWake(); startTimer(); },
     pause: togglePause,
     early: () => finish(true),
@@ -536,6 +524,12 @@
     if (e.target.name === 'again') {
       const err = dry.querySelector('[data-error]');
       if (err) err.hidden = true;
+    }
+    if (e.target.matches('[data-pick]')) {
+      if (e.target.value) store.set('pick', e.target.value);
+      else store.del('pick');
+      renderHome();
+      dry.querySelector('[data-pick]')?.focus();
     }
   });
 
