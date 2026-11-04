@@ -8,6 +8,7 @@ const GROUPS = [
   { key: 'yes', name: 'Do again' },
   { key: 'unsure', name: 'Not sure' },
   { key: 'no', name: 'Skip next time' },
+  { key: 'once', name: 'Just for today' }, // choose build one-offs; only shown when there are some
 ];
 
 export function renderReport() {
@@ -25,11 +26,11 @@ export function renderReport() {
     e.last = r;
     byTask.set(r.taskId, e);
   }
-  const groups = { yes: [], unsure: [], no: [] };
-  for (const e of byTask.values()) (groups[e.last.again] || groups.unsure).push(e);
+  const groups = { yes: [], unsure: [], no: [], once: [] };
+  for (const e of byTask.values()) (e.last.custom ? groups.once : groups[e.last.again] || groups.unsure).push(e);
   for (const g of Object.values(groups)) g.sort((a, b) => b.last.finishedAt.localeCompare(a.last.finishedAt));
 
-  const groupHtml = GROUPS.map(({ key, name }) => {
+  const groupHtml = GROUPS.filter(({ key }) => key !== 'once' || groups.once.length).map(({ key, name }) => {
     const items = groups[key];
     const list = items.length
       ? `<ul class="items">${items.map(({ last, times }) => {

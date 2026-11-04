@@ -1,7 +1,7 @@
 // The start screen: today's task (or, in the choose build, a list to pick
 // from), done for today, or the end of the list.
 import {
-  IS_TEST, IS_CHOOSE, state, store, esc, shortDate, getLog, getTasks, getCycle, pickedTask, currentTask, doneToday,
+  IS_TEST, IS_CHOOSE, state, store, esc, dry, shortDate, getLog, getTasks, getCycle, pickedTask, currentTask, doneToday,
   setP, setFull, stopLoops, paint, setTitle, bar, dateLeft, reportLink,
 } from './core.js';
 import { releaseWake } from './effects.js';
@@ -14,6 +14,8 @@ export function renderHome() {
   releaseWake();
   setTitle('Fifteen');
 
+  // Keep anything typed into the one-off box when the screen re-renders.
+  const draft = dry.querySelector('[data-custom-form] input')?.value || '';
   const tasks = getTasks();
   const picked = pickedTask();
   const next = currentTask();
@@ -46,7 +48,7 @@ export function renderHome() {
       <h1 class="task">See you tomorrow.</h1>
     </main>`;
   } else if (IS_CHOOSE) {
-    body = chooseHtml(tasks);
+    body = chooseHtml(tasks, draft);
   } else {
     const aside = next.early ? '<p class="aside">You can finish early once you’ve found it.</p>' : '';
     body = `<main class="screen">
@@ -63,8 +65,9 @@ export function renderHome() {
   paint(`<div class="frame">${bar(dateLeft(), reportLink)}${body}</div>`);
 }
 
-// Choose build: every task is a button. Picking one starts it.
-function chooseHtml(tasks) {
+// Choose build: every task is a button. Picking one starts it. Below the
+// list, a one-off task that isn't on the list can be typed in and started.
+function chooseHtml(tasks, draft) {
   const lastDone = new Map(getLog().map((r) => [r.taskId, r.date]));
   const items = tasks.map((t) => {
     const meta = [];
@@ -79,7 +82,23 @@ function chooseHtml(tasks) {
   return `<main class="screen choose">
     <h1 class="task">What will you do today?</h1>
     <ul class="choose-list">${items}</ul>
+    <form class="custom-form" data-custom-form novalidate>
+      <label class="note"><span>Or something else, just for today</span>
+        <input type="text" name="custom" maxlength="120" autocomplete="off" value="${esc(draft)}"></label>
+      <div class="actions"><button class="btn" type="submit">Start</button></div>
+      <p class="form-error" data-error role="alert" hidden>Say what you’ll do first.</p>
+    </form>
   </main>`;
+}
+
+// The one-off task typed into the choose screen, or null (with an error shown).
+// Its id comes from its title, so doing the same thing twice counts as one task
+// in the report, and it can't clash with a list task's id.
+export function customTask(form) {
+  const input = form.elements.custom;
+  const title = input.value.trim();
+  if (!title) { form.querySelector('[data-error]').hidden = false; input.focus(); return null; }
+  return { id: `once:${title.toLowerCase()}`, title, custom: true };
 }
 
 function pickerHtml(tasks, picked) {

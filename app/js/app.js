@@ -1,7 +1,7 @@
 // Entry point: wires up events and routing, then restores any saved session.
 import { TOTAL_MS, IS_CHOOSE, state, store, dry, syncScroll, saveSession, elapsed, taskById } from './core.js';
 import { primeAudio, requestWake } from './effects.js';
-import { renderHome, restart } from './home.js';
+import { renderHome, restart, customTask } from './home.js';
 import { start, startTimer, runTimer, tick, togglePause, finish, quit } from './timer.js';
 import { renderReflect, save } from './reflect.js';
 import { renderReport, exportData, clearTest } from './report.js';
@@ -32,6 +32,11 @@ dry.addEventListener('click', (e) => {
 dry.addEventListener('submit', (e) => {
   if (e.target.matches('[data-form]')) { e.preventDefault(); save(e.target); }
   if (e.target.matches('[data-task-form]')) { e.preventDefault(); saveTask(e.target); }
+  if (e.target.matches('[data-custom-form]')) {
+    e.preventDefault();
+    const t = customTask(e.target);
+    if (t) start(t);
+  }
 });
 dry.addEventListener('change', (e) => {
   if (e.target.name === 'again') {

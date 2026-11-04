@@ -189,6 +189,9 @@ label.opt input:checked + span { background: var(--fg); color: var(--bg); }
 .choose-title { font-size: 1.1875rem; font-weight: 600; line-height: 1.25; }
 .choose-hint { color: var(--muted); font-size: 0.9375rem; line-height: 1.4; }
 .choose-meta { margin-top: 0.2rem; color: var(--muted); font-size: 0.8125rem; }
+.custom-form { max-width: 32rem; margin-top: 1.5rem; }
+.custom-form .actions { margin-top: 1.25rem; }
+.mark.once { border-style: dashed; }
 
 .manage-cols {
   display: grid;

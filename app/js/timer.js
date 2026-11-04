@@ -15,6 +15,7 @@ export function start(t = currentTask()) {
   askNotify();
   requestWake();
   state.session = { taskId: t.id, title: t.title, startedAt: null, pausedAt: null, pausedTotal: 0, endedAt: null, early: false };
+  if (t.custom) state.session.custom = true; // a one-off: no question afterwards
   breathe();
 }
 
