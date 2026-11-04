@@ -3,6 +3,7 @@
 import {
   IS_TEST, IS_CHOOSE, state, store, esc, dry, shortDate, getLog, getTasks, getCycle, pickedTask, currentTask, doneToday,
   setP, setFull, stopLoops, paint, setTitle, bar, dateLeft, reportLink,
+  getMinutes, MIN_MINUTES, MAX_MINUTES, STEP_MINUTES,
 } from './core.js';
 import { releaseWake } from './effects.js';
 
@@ -58,6 +59,7 @@ export function renderHome() {
         <button class="btn primary big" data-act="start">Start</button>
         ${aside}
       </div>
+      ${lengthHtml()}
     </main>`;
   }
 
@@ -81,6 +83,7 @@ function chooseHtml(tasks, draft) {
   }).join('');
   return `<main class="screen choose">
     <h1 class="task">What will you do today?</h1>
+    ${lengthHtml()}
     <ul class="choose-list">${items}</ul>
     <form class="custom-form" data-custom-form novalidate>
       <label class="note"><span>Or something else, just for today</span>
@@ -99,6 +102,26 @@ export function customTask(form) {
   const title = input.value.trim();
   if (!title) { form.querySelector('[data-error]').hidden = false; input.focus(); return null; }
   return { id: `once:${title.toLowerCase()}`, title, custom: true };
+}
+
+// How long the timer runs, in 5-minute steps. Remembered for next time.
+function lengthHtml() {
+  const m = getMinutes();
+  return `<div class="length" role="group" aria-label="Timer length">
+    <button class="step" data-act="shorter" aria-label="Shorter"${m <= MIN_MINUTES ? ' disabled' : ''}>−</button>
+    <span class="length-value" data-length aria-live="polite">${m} min</span>
+    <button class="step" data-act="longer" aria-label="Longer"${m >= MAX_MINUTES ? ' disabled' : ''}>+</button>
+  </div>`;
+}
+
+export function changeLength(dir) {
+  const m = Math.min(MAX_MINUTES, Math.max(MIN_MINUTES, getMinutes() + dir * STEP_MINUTES));
+  store.set('minutes', m);
+  renderHome();
+  // Keep focus on the stepper; if that end is now disabled, use the other one.
+  const [first, other] = dir < 0 ? ['shorter', 'longer'] : ['longer', 'shorter'];
+  const b = dry.querySelector(`[data-act="${first}"]`);
+  (b.disabled ? dry.querySelector(`[data-act="${other}"]`) : b).focus();
 }
 
 function pickerHtml(tasks, picked) {
